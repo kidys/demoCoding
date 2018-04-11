@@ -1,0 +1,31 @@
+html, body {
+	font-size: 16px;
+}
+
+.container {
+	padding: 1.25rem 5px;
+	margin: 0;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+	display: block;
+	vertical-align: middle;
+	margin: 0 auto;
+}
+
+h1 {
+	font-size: 1.65rem;
+	text-align: center;
+}
+
+h1 small {
+	display: block;
+}
+
+@media (max-width: 1024px) {
+	html, body {
+		font-size: 14px;
+	}
+}

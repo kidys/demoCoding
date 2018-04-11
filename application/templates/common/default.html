@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="{{ charset }}">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <base href="{{ baseUrl }}">
+
+    <title>{{ title }}</title>
+    <style type="text/css">
+        html, body { box-sizing: border-box; margin: 0; } body { opacity: 0; transition: opacity 2s ease-in; }
+    </style>
+</head>
+<body>
+    <div id="pageContent">{% block content %}{% endblock %}</div>
+
+    <script async>
+        function addScript(uri, callback) {
+            var script = document.createElement('script');
+            script.src = uri;
+            script.type = 'text/javascript';
+            document.body.appendChild(script);
+            
+            if (script.readyState) {
+                script.onreadystatechange = function() {
+                    if (script.readyState === 'loaded' || script.readyState === 'complete') {
+                        script.onreadystatechange = null;
+                        if(callback != null) callback();
+                    }
+                };
+            } else {
+                script.onload = function() {
+                    if (callback != null) callback();
+                }
+            }
+        };
+
+        function addStyle(uri) {
+            var stylesheet = document.createElement('link');
+            stylesheet.href = uri;
+            stylesheet.type = 'text/css';
+            stylesheet.rel = 'stylesheet';
+            document.head.appendChild(stylesheet);
+        };
+        
+        window.onload = function() {
+            addScript('https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js', function() {
+                console.log('jQuery v.'+$.fn.jquery+' is loaded!');     
+
+                $.each([
+                    'https://fonts.googleapis.com/css?family=PT+Sans',
+                    '/assets/style.css'
+                ], function(i, val) {
+                    addStyle(val);
+                });  
+
+                addScript('/assets/script.js');
+
+                setTimeout(function() {
+                    $('body').css('font-family', '"PT Sans", sans-serif').animate({ opacity: 1 }, 1500);
+                }, 1500);        
+            });
+        };
+    </script>
+</body>
+</html>
