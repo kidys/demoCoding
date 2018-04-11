@@ -55,14 +55,18 @@ class Application {
     }
 
     private function runLogger() {
-    	$this->_logger = (new Logger('developmentLevel'));
+    	$this->_logger = (new Logger('logLevel'));
 
-    	$stream = new StreamHandler('./application/logs/debug.' . date('Y-m-d__H-i-00', time()) . '.log', Logger::DEBUG);
-    	$lineFormatter = new LineFormatter('%datetime% > %level_name% > %message% %context%' . PHP_EOL, 'Y-m-d H:i:s');
-    	$lineFormatter->includeStacktraces(true);
-    	$stream->setFormatter($lineFormatter);
+    	$debugHandler = new StreamHandler('./application/logs/debug.' . date('Y-m-d__H-00-00', time()) . '.log', Logger::DEBUG);
+    	$errorHandler = new StreamHandler('./application/logs/errors__' . date('Y-m-d__H-00-00', time()) . '.log', Logger::ERROR);
+    	//$lineFormatter = new LineFormatter('%datetime% > %level_name% > %message% %context%' . PHP_EOL, 'Y-m-d H:i:s');
+    	$lineFormatter = new LineFormatter(null, null, false, true);
 
-	    $this->_logger->pushHandler($stream)->pushHandler(new FirePHPHandler());
+    	$debugHandler->setFormatter($lineFormatter);
+    	$errorHandler->setFormatter($lineFormatter);
+
+	    //$this->_logger->pushHandler($debugHandler);
+	    $this->_logger->pushHandler($errorHandler);
     }
 
     private function setEnvVariables($environment) {
@@ -75,7 +79,10 @@ class Application {
     	$containerSlim['notFoundHandler'] = function ($containerSlim) {
 		    return function (Request $req, Response $res) use ($containerSlim) {
 
-		    	$this->writeLog('Ошибка 404');
+		    	$this->writeLogError('Error 404', [
+		    		'exception' => new \Exception('Error 404. Page not Found'),
+		    		'text' => 'Не найден файл. Что же делать?'
+		    	]);
 	            return $containerSlim['view']->render($containerSlim['response']
             	    ->withStatus(404)
             	    ->withHeader('Content-Type', 'text/html'), '404.html', [
@@ -85,10 +92,22 @@ class Application {
 		};	
     }
 
-    private function writeLog($message = 'Возникла ошибка') {
+    private function writeLogError($message = 'Возникла ошибка', $array = []) {
     	if (getenv('is_logged')) {
-    		$e = new \Exception($message);
-    		$this->_logger->error($message, [ 'exception' => $e ]);
+    		if (isset($array['exception']) && ($array['exception'] instanceof \Exeption)) {
+    			$e = $array['exception'];
+    			unset($array['exception']);
+    		} else {
+    			$e = new \Exception($message);
+    		}
+
+    		$arr = [ 'exception' => $e ];
+    		
+    		foreach ($array as $k => $v) {
+    			$arr[$k] = $v;
+    		}
+
+    		$this->_logger->error($message, $arr);
 		}
     }
 
